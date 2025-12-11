@@ -1,0 +1,12 @@
+{
+  "name": "farog-test-utils",
+  "version": "1.0.0",
+  "description": "Тестовые утилиты для проектов на Farog",
+  "license": "Apache-2.0",
+  "author": "TheSkiF4er <contact@cajeer.ru>",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  }
+}
