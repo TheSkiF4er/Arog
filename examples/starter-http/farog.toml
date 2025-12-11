@@ -1,0 +1,7 @@
+name = "farog-starter-http"
+version = "1.0.0"
+entry = "src/index.ts"
+type = "module"
+
+[permissions]
+network = ["127.0.0.1:8080"]
