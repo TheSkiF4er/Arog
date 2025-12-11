@@ -1,0 +1,7 @@
+# CODEOWNERS для проекта Farog
+/runtime/ @TheSkiF4er
+/cli/ @TheSkiF4er
+/stdlib/ @TheSkiF4er
+/packages/ @TheSkiF4er
+/docs/ @TheSkiF4er
+/website/ @TheSkiF4er

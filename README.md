@@ -1,96 +1,94 @@
 # Farog
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)]() [![Downloads](https://img.shields.io/badge/downloads-—-blue)]() [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+**Автор:** TheSkiF4er  
+**Лицензия:** Apache 2.0
 
-> **Farog — быстрый, безопасный и TypeScript-first runtime для современного веба.**
-> Runtime, пакетник, бандлер и тест-раннер — в одном аккуратном бинарнике.
+> Farog — уникальный, сверхбыстрый и безопасный JavaScript/TypeScript-runtime нового поколения, созданный с нуля без использования готовых решений и чужих шаблонов.
 
----
-
-## Что такое Farog?
-
-Farog — это современный JavaScript/TypeScript runtime, спроектированный для реальной работы в production: serverless, edge, microservices и CLI-утилит. Он сочетает совместимость с экосистемой Node.js и npm с удобством TypeScript «из коробки» и моделью безопасности по умолчанию.
+Farog объединяет ядро-рантайм, пакетный менеджер, бандлер и тестовый раннер в одном аккуратном бинарнике (или в наборе бинарников core+CLI). Проект ориентирован на современную разработку серверных приложений, serverless/edge-функций и CLI-инструментов, обеспечивая при этом плавный переход с существующих проектов на Node.js.
 
 ---
 
-## Почему Farog?
+## Ключевые особенности
 
-* **TypeScript-first** — запускайте `.ts` без внешних трансайлеров или сложных конфигураций.
-* **Smooth Node migration** — инструменты миграции и максимальная совместимость с CommonJS/ESM и npm.
-* **Secure-by-default** — явные разрешения на сеть/файлы/переменные окружения/процессы.
-* **Single-binary DX** — одна команда — всё: запуск, сборка, тесты, пакетный менеджер.
-* **WASM-first** — безопасная стратегия нативных аддонов через WebAssembly / FFI.
-* **Оптимизация cold-start** — идеален для edge и serverless.
+- **Максимальная уникальность**  
+  Вся архитектура Farog — оригинальная: собственный рантайм (C++), собственный формат конфигурации, собственный пакетный менеджер и API стандартной библиотеки.
+
+- **Полная поддержка JavaScript и TypeScript**  
+  TypeScript выполняется «из коробки», без дополнительных транспайлеров и сборщиков. Достаточно написать `.ts` и выполнить `farog run`.
+
+- **Плавный переход с Node.js**  
+  Инструмент `farog import-node` (реализуется в Go-CLI) анализирует `package.json`, помогает перенести скрипты, зависимости и подсвечивает потенциально проблемные места.
+
+- **Безопасность по умолчанию**  
+  Farog использует модель явных разрешений: доступ к сети, файловой системе, переменным окружения и дочерним процессам должен быть разрешён явно через конфигурацию или интерактивное подтверждение.
+
+- **Ориентация на производительность**  
+  Ядро на C++ даёт полный контроль над памятью и потоками и оптимизировано для быстрого cold start и низкой задержки ввода-вывода, что особенно важно для serverless и edge-сценариев.
+
+---
+
+## Установка
+
+```bash
+# Linux / macOS (пример установки)
+curl -sSL https://install.farog.dev | sh
+
+# Проверка версии
+farog --version
+# Ожидаемый вывод: Farog 1.0.0
+```
 
 ---
 
 ## Быстрый старт
 
-### Установка (пример)
+### Создание нового проекта
 
 ```bash
-# macOS / Linux (пример)
-curl -sSL https://install.farog.dev | sh
-# или скачать релиз с GitHub Releases
+farog init my-farog-app
+cd my-farog-app
 ```
 
-### Инициализация проекта
+Структура:
 
-```bash
-farog init my-app
-cd my-app
+```text
+my-farog-app/
+├─ farog.toml
+└─ src/
+   └─ index.ts
 ```
 
-### Hello world (src/index.ts)
+### Пример `src/index.ts`
 
 ```ts
 import { serve } from "farog/http";
 
-serve({ port: 8080 }, () => new Response("Hello from Farog!"));
+serve({ port: 8080 }, async (request) => {
+  const url = new URL(request.url);
+  return new Response(`Hello from Farog! Path: ${url.pathname}`);
+});
 ```
 
 ### Запуск
 
 ```bash
 farog run src/index.ts
-# при первом запуске Farog запросит разрешения на сеть/файлы
 ```
+
+При первом запуске Farog CLI запросит или применит разрешения на использование сети. Вы можете:
+
+- временно разрешить доступ;
+- записать разрешения сразу в `farog.toml`.
 
 ---
 
-## Основные команды CLI
-
-```
-farog init [name]        # scaffold проекта (arog.toml, src/, tsconfig)
-farog run <file>         # запуск .js/.ts — auto-compile
-farog dev                # dev server с HMR
-farog build              # production bundle / изображение
-farog test               # запустить тесты
-farog pm install         # пакетный менеджер (быстрая установка)
-farog pm add <pkg>@ver   # добавить пакет
-farog pm audit           # security scan
-farog import-node        # автоматическая миграция из Node.js
-farog shell              # secure REPL с запросом разрешений
-```
-
----
-
-## Миграция из Node.js
-
-Мы сделали всё, чтобы переход был максимально лёгким:
-
-* `farog import-node` — автоматически анализирует `package.json`, предлагает конвертацию скриптов и создаёт `farog.toml`.
-* Поддержка CommonJS + ESM.
-* Совместимость с большинством npm-пакетов; для нативных аддонов есть пути: rebuild под Farog ABI или порт на WASM.
-
----
-
-## Конфигурация — `farog.toml` (пример)
+## Конфигурация (`farog.toml`)
 
 ```toml
-name = "my-app"
-version = "0.1.0"
-main = "src/index.ts"
+name = "my-farog-app"
+version = "1.0.0"
+entry = "src/index.ts"
 type = "module"
 
 [permissions]
@@ -99,74 +97,106 @@ fs = ["./data/*"]
 
 [build]
 target = "edge"
-singleBinary = false
 minify = true
+singleBinary = false
+```
+
+---
+
+## Использование пакетов
+
+Farog включает собственный, уникальный пакетный менеджер (реализуемый в Go-CLI), поддерживающий установку пакетов из npm-экосистемы:
+
+```bash
+farog pm add lodash
+farog pm add typescript --dev
+farog pm install
+```
+
+Большинство чисто JavaScript/TypeScript пакетов работают без модификаций. Для нативных модулей предусмотрены:
+
+- пересборка под ABI Farog;
+- рекомендованный порт на WebAssembly;
+- использование абстракций безопасного FFI.
+
+---
+
+## Основные команды CLI
+
+```text
+farog init [name]        Создать новый проект с шаблоном
+farog run <file>         Выполнить JS/TS файл
+farog dev                Запустить dev-режим с авто-перезапуском
+farog build              Собрать приложение для продакшена
+farog test               Запустить тесты проекта
+farog pm install         Установить зависимости
+farog pm add <pkg>       Добавить зависимость
+farog pm audit           Проверить зависимости на уязвимости
+farog import-node        Помощник миграции с Node.js
+farog shell              Интерактивная оболочка (REPL) с контролем разрешений
 ```
 
 ---
 
 ## Структура репозитория
 
-```
-/
-├─ runtime/        # core (Rust/C++), движок bindings
-├─ cli/            # arog CLI
-├─ stdlib/         # arog стандартная библиотека (http, fs, permissions...)
-├─ packages/       # SDKs и вспомогательные пакеты
-├─ examples/       # starter templates
-├─ docs/
-├─ website/
-└─ README.md
-```
+Репозиторий Farog использует монорепо-подход:
+
+- `runtime/` — ядро рантайма и движковые привязки (C++);
+- `cli/` — CLI-утилита `farog` и пакетный менеджер (Go);
+- `stdlib/` — стандартная библиотека модулей Farog;
+- `packages/` — дополнительные пакеты (SDK, test-utils);
+- `examples/` — примеры проектов и шаблоны;
+- `docs/` — документация;
+- `website/` — исходники веб-сайта и документации.
+
+Подробности структуры описаны в `REPO-ARCHITECTURE.md`.
 
 ---
 
-## Безопасность и supply-chain
+## Вклад в проект
 
-* Подписанные релизы (GPG / sigstore).
-* `farog.lock` — детерминированные установки.
-* Встроенный `farog pm audit` + CI-сканирование зависимостей.
-* Политика: сообщения по `security@cajeer.ru` (PGP в SECURITY.md). Ответ об acknowledgement — в течение 72 часов.
+Мы приветствуем любые улучшения — от исправления опечаток в документации до глубоких изменений в рантайме.
 
----
+Перед отправкой pull request:
 
-## Roadmap (ключевые вехи)
+1. Ознакомьтесь с `CONTRIBUTING.md`.
+2. Создайте issue с описанием проблемы или улучшения, если его ещё нет.
+3. Убедитесь, что:
+   - все тесты проходят;
+   - добавлены тесты для нового функционала;
+   - обновлена документация (при необходимости);
+   - изменения понятны из описания PR и коммитов.
 
-* MVP: single binary, TS runtime, `farog run`, `farog pm install`, http module.
-* M1: `farog import-node`, dev server с HMR, permissions model.
-* M2: single-file build, WASM native plugins, cross-platform релизы.
-* M3: LTS, governance, ecosystem growth.
-
----
-
-## Вклад
-
-Мы рады контрибьюторам! Перед PR:
-
-1. Откройте issue с описанием или назначьте себя.
-2. Следуйте `CONTRIBUTING.md`: кодстайл, тесты, CI.
-3. Убедитесь, что PR содержит тесты и документацию для изменений.
-
-Ищите метки `good-first-issue` и `help-wanted`.
+Для первых шагов ищите задачи с метками `good-first-issue` и `help-wanted`.
 
 ---
 
-## Полезные ссылки
+## Безопасность
 
-* Документация (в разработке): `https://cajeer.ru/Arog/Farog`
-* GitHub: `https://github.com/TheSkiF4er/Farog`
-* Security: `security@cajeer.ru`
+Безопасность — один из ключевых приоритетов Farog.
+
+- Политика безопасности описана в `SECURITY.md`.
+- Об уязвимостях просим сообщать на `security@cajeer.ru`.
+- Мы стараемся подтверждать получение отчёта в течение 72 часов.
+
+---
+
+## Governance
+
+Проект Farog разрабатывается автором **TheSkiF4er** совместно с сообществом. Подробности о принятии решений, ролях и процессах описаны в `GOVERNANCE.md`.
 
 ---
 
 ## Контакты
 
-**Author:** TheSkiF4er
-Project site / docs: [https://cajeer.ru](https://cajeer.ru) (в разработке)
-GitHub: [https://github.com/TheSkiF4er/Farog](https://github.com/TheSkiF4er/Farog)
+- Общие вопросы: contact@cajeer.ru
+- Безопасность: security@cajeer.ru
 
 ---
 
 ## Лицензия
 
-Arog распространяется под лицензией **Apache-2.0** — см. файл `LICENSE`.
+Farog распространяется по лицензии **Apache License 2.0**. Полный текст лицензии — в файле `LICENSE`.
+
+Спасибо за интерес к Farog!
